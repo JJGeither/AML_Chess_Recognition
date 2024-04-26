@@ -7,7 +7,8 @@ import multiprocessing as mp
 import os
 import sys
 
-def runt(fileName, src, fen_from_filename, fen_from_position, NUM_SPACES_PER_BOARD):
+
+def runt(fileName, src, fen_from_filename, fen_from_position, NUM_SPACES_PER_BOARD, data_dict):
     
     def HogTransform(img):
         first_image_gray = color.rgb2gray(img)
@@ -27,12 +28,10 @@ def runt(fileName, src, fen_from_filename, fen_from_position, NUM_SPACES_PER_BOA
         hog_image_uint8 = (hog_image_rescaled * 255).astype(np.uint8)
         return hog_image_uint8
 
-    print('Hello from the child process')
-    # flush output
-    sys.stdout.flush()
+
+    data = {'fenstring': [], 'data': []}
 
     dimension = 400 // 8
-    data = {'fenstring': [], 'data': []}
     spaceTilesStored, count = 0, 0
 
     if fileName.endswith('.jpg') or fileName.endswith('.jpeg'):
@@ -44,12 +43,21 @@ def runt(fileName, src, fen_from_filename, fen_from_position, NUM_SPACES_PER_BOA
         
         for patch in patches:
             patchType = fen_from_position(boardPosition, fenString)
+            if patchType == ' ':
+                if spaceTilesStored > NUM_SPACES_PER_BOARD:
+                    continue
+                spaceTilesStored += 1
             
             hog_features = HogTransform(patch)
             #hog_features = patch
 
-            data['data'].append(hog_features)
-            data['fenstring'].append(patchType)
+            # Append to shared lists in the manager dict
+            # Assuming data_dict is a list of dictionaries
+
+            #with lock:
+            new_data = {'data': [hog_features], 'fenstring': [patchType]}
+            data_dict.append(new_data)
+
             boardPosition += 1
     
-    return data
+    return
