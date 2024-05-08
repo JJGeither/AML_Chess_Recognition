@@ -45,6 +45,7 @@ def runt(fileName, src, fen_from_filename, fen_from_position, NUM_SPACES_PER_BOA
             patchType = fen_from_position(boardPosition, fenString)
             if patchType == ' ':
                 if spaceTilesStored > NUM_SPACES_PER_BOARD:
+                    boardPosition += 1
                     continue
                 spaceTilesStored += 1
             
